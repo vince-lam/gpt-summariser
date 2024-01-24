@@ -21,3 +21,4 @@ files/
 
 # .venv
 .venv/
+.env
