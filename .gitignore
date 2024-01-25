@@ -6,6 +6,7 @@ __pycache__/
 
 ### Files
 files/
+outputs/
 
 ### VisualStudioCode ###
 .vscode/*
