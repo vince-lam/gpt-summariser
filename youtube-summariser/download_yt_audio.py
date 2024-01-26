@@ -1,7 +1,26 @@
 import os
 import sys
+from datetime import datetime
 
 import yt_dlp
+
+
+def rename_file_with_date(original_path):
+    # Extract directory, original name, and extension
+    directory, filename = os.path.split(original_path)
+    name, extension = os.path.splitext(filename)
+
+    # Get today's date in YYYY-MM-DD format
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # Create a new filename with today's date
+    new_filename = f"{today}_{name}{extension}"
+    new_path = os.path.join(directory, new_filename)
+
+    # Rename the file
+    os.rename(original_path, new_path)
+
+    return new_path
 
 
 def download_audio(youtube_url, output_path="outputs/audio"):
@@ -39,7 +58,12 @@ def download_audio(youtube_url, output_path="outputs/audio"):
         ydl.download([youtube_url])
 
     # Assuming only one file is downloaded, return the first item in the list
-    return downloaded_filenames[0] if downloaded_filenames else None
+    # Rename the file with today's date
+    if downloaded_filenames:
+        final_path = rename_file_with_date(downloaded_filenames[0])
+        return final_path
+    else:
+        return None
 
 
 # Example usage
