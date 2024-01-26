@@ -6,21 +6,25 @@ import yt_dlp
 
 
 def rename_file_with_date(original_path):
-    # Extract directory, original name, and extension
-    directory, filename = os.path.split(original_path)
-    name, extension = os.path.splitext(filename)
+    # Catch any OSError exceptions that might occur during the file renaming.
+    try:
+        directory, filename = os.path.split(original_path)
+        name, extension = os.path.splitext(filename)
 
-    # Get today's date in YYYY-MM-DD format
-    today = datetime.now().strftime("%Y-%m-%d")
+        # Get today's date in YYYY-MM-DD format
+        today = datetime.now().strftime("%Y-%m-%d")
 
-    # Create a new filename with today's date
-    new_filename = f"{today}_{name}{extension}"
-    new_path = os.path.join(directory, new_filename)
+        # Create a new filename with today's date
+        new_filename = f"{name}_{today}{extension}"
+        new_path = os.path.join(directory, new_filename)
 
-    # Rename the file
-    os.rename(original_path, new_path)
+        # Rename the file
+        os.rename(original_path, new_path)
 
-    return new_path
+        return new_path
+    except OSError as e:
+        print(f"Error renaming file: {e}")
+        return None
 
 
 def download_audio(youtube_url, output_path="outputs/audio"):
