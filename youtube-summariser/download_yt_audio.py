@@ -1,8 +1,15 @@
+import logging
 import os
 import sys
 from datetime import datetime
 
 import yt_dlp
+
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def rename_file_with_date(original_path):
@@ -18,12 +25,21 @@ def rename_file_with_date(original_path):
         new_filename = f"{name}_{today}{extension}"
         new_path = os.path.join(directory, new_filename)
 
+        # Log the renaming attempt
+        logging.info(f"Attempting to rename file from {original_path} to {new_path}")
+
         # Rename the file
         os.rename(original_path, new_path)
 
+        # Log successful renaming
+        logging.info(f"Successfully renamed file to {new_path}")
+
         return new_path
     except OSError as e:
-        print(f"Error renaming file: {e}")
+        # Log detailed error information
+        logging.error(
+            f"Error renaming file from {original_path} to {new_path}: {e.strerror}"
+        )
         return None
 
 
