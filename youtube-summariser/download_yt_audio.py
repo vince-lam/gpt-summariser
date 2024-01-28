@@ -47,13 +47,15 @@ def download_audio(youtube_url, output_path="outputs/audio"):
     # List to store downloaded filenames
     downloaded_filenames = []
 
-    def my_hook(d):
-        if d["status"] == "finished":
-            filename = d["filename"]
-            # Replace the original extension with .wav
-            wav_filename = os.path.splitext(filename)[0] + ".wav"
-            print(f"\n\nDownload complete, now converting:\n{d['filename']}")
-            downloaded_filenames.append(wav_filename)
+    def my_hook(info_dict):
+        if info_dict["status"] == "finished":
+            return None
+
+        filename = info_dict["filename"]
+        # Replace the original extension with .wav
+        wav_filename = os.path.splitext(filename)[0] + ".wav"
+        print(f"\n\nDownload complete, now converting:\n{filename}")
+        downloaded_filenames.append(wav_filename)
 
     # Ensure the output directory exists
     if not os.path.exists(output_path):
