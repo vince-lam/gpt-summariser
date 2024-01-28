@@ -22,7 +22,7 @@ def rename_file_with_date(original_path):
         today = datetime.now().strftime("%Y-%m-%d")
 
         # Create a new filename with today's date
-        new_filename = f"{name}_{today}{extension}"
+        new_filename = f"{today}_{name}{extension}"
         new_path = os.path.join(directory, new_filename)
 
         # Log the renaming attempt
