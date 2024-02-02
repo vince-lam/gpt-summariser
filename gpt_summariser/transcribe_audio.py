@@ -6,9 +6,10 @@ from numba import NumbaDeprecationWarning
 
 warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 import whisper
+from whisper.utils import get_writer
 
 
-def transcribe(audio_path):
+def transcribe(audio_path, output_path="outputs/transcripts"):
     """
     Transcribe the audio file using Whisper model at the given path and save the transcript to a file.
 
@@ -25,10 +26,11 @@ def transcribe(audio_path):
     transcript = model.transcribe(audio_path)
 
     # Save the transcript to a file
-    filename = os.path.splitext(os.path.basename(audio_path))[0] + ".txt"
-    text_path = os.path.join("outputs/transcripts", filename)
-    with open(text_path, "w", encoding="utf-8") as file:
-        file.write(transcript["text"])
+    audio_filename = os.path.basename(audio_path)
+    txt_filename = os.path.splitext(os.path.basename(audio_path))[0] + ".txt"
+    text_path = os.path.join(output_path, txt_filename)
+    txt_writer = get_writer("txt", output_path)
+    txt_writer(transcript, audio_filename)
 
     return text_path
 
