@@ -1,6 +1,10 @@
 import os
 import sys
+import warnings
 
+from numba import NumbaDeprecationWarning
+
+warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 import whisper
 
 
@@ -22,10 +26,7 @@ def transcribe(audio_path):
 
     # Save the transcript to a file
     filename = os.path.splitext(os.path.basename(audio_path))[0] + ".txt"
-    print(filename)
     text_path = os.path.join("outputs/transcripts", filename)
-    print(text_path)
-    print(transcript)
     with open(text_path, "w", encoding="utf-8") as file:
         file.write(transcript["text"])
 
