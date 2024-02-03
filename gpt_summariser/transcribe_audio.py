@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import warnings
@@ -43,9 +44,30 @@ def transcribe(audio_path, format="txt", output_path="outputs/transcripts"):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        audio_path = sys.argv[1]
-        format = sys.argv[2]
-        text_path = transcribe(audio_path, format=format)
+        parser = argparse.ArgumentParser(description="Transcribe audio file.")
+        parser.add_argument(
+            "audio_path", type=str, help="The path to the audio file to transcribe."
+        )
+        parser.add_argument(
+            "--format",
+            type=str,
+            default="txt",
+            help="The format of the output transcript.",
+        )
+        parser.add_argument(
+            "--output_path",
+            type=str,
+            default="outputs/transcripts",
+            help="The path to save the transcript.",
+        )
+
+        args = parser.parse_args()
+
+        text_path = transcribe(
+            args.audio_path, format=args.format, output_path=args.output_path
+        )
         print(f"Transcript saved to:\n{text_path}")
     else:
-        print("Usage:\npython3 -m gpt_summariser.transcribe_audio <audio_path>")
+        print(
+            "Usage:\npython3 -m gpt_summariser.transcribe_audio <audio_path> --format vtt"
+        )
