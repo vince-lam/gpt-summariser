@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import timeit
 import warnings
 
 from numba import NumbaDeprecationWarning
@@ -24,7 +25,10 @@ def transcribe(audio_path, format="txt", output_path="outputs/transcripts"):
     model = whisper.load_model("tiny.en")
 
     # Transcribe the audio
+    start_time = timeit.default_timer()
     transcript = model.transcribe(audio_path)
+    end_time = timeit.default_timer()
+    elapsed_time = int(end_time - start_time)
 
     # Save the transcript to a file
     audio_filename = os.path.basename(audio_path)
@@ -39,7 +43,7 @@ def transcribe(audio_path, format="txt", output_path="outputs/transcripts"):
     filename = os.path.splitext(os.path.basename(audio_path))[0] + "." + format
     text_path = os.path.join(output_path, filename)
 
-    return text_path
+    return elapsed_time, text_path
 
 
 if __name__ == "__main__":
@@ -63,10 +67,12 @@ if __name__ == "__main__":
 
         args = parser.parse_args()
 
-        text_path = transcribe(
+        elapsed_time_secs, text_path = transcribe(
             args.audio_path, format=args.format, output_path=args.output_path
         )
-        print(f"Transcript saved to:\n{text_path}")
+        print(
+            f"Audio transcribed in {elapsed_time_secs} seconds.\nTranscript saved to:\n{text_path}"
+        )
     else:
         print(
             "Usage:\npython3 -m gpt_summariser.transcribe_audio <audio_path> --format vtt"
