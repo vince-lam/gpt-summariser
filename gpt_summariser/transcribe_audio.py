@@ -9,7 +9,7 @@ import whisper
 from whisper.utils import get_writer
 
 
-def transcribe(audio_path, output_path="outputs/transcripts"):
+def transcribe(audio_path, format="txt", output_path="outputs/transcripts"):
     """
     Transcribe the audio file using Whisper model at the given path and save the transcript to a file.
 
@@ -27,10 +27,16 @@ def transcribe(audio_path, output_path="outputs/transcripts"):
 
     # Save the transcript to a file
     audio_filename = os.path.basename(audio_path)
-    txt_filename = os.path.splitext(os.path.basename(audio_path))[0] + ".txt"
-    text_path = os.path.join(output_path, txt_filename)
-    txt_writer = get_writer("txt", output_path)
-    txt_writer(transcript, audio_filename)
+
+    if format == "vtt":
+        vtt_writer = get_writer("vtt", output_path)
+        vtt_writer(transcript, audio_filename)
+    else:
+        txt_writer = get_writer("txt", output_path)
+        txt_writer(transcript, audio_filename)
+
+    filename = os.path.splitext(os.path.basename(audio_path))[0] + "." + format
+    text_path = os.path.join(output_path, filename)
 
     return text_path
 
@@ -38,7 +44,8 @@ def transcribe(audio_path, output_path="outputs/transcripts"):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         audio_path = sys.argv[1]
-        text_path = transcribe(audio_path)
+        format = sys.argv[2]
+        text_path = transcribe(audio_path, format=format)
         print(f"Transcript saved to:\n{text_path}")
     else:
         print("Usage:\npython3 -m gpt_summariser.transcribe_audio <audio_path>")
