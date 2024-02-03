@@ -1,45 +1,9 @@
-import logging
 import os
 import sys
 from datetime import datetime
+from .utils import slugify, get_filename_without_file_extension
 
 import yt_dlp
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-
-def rename_file_with_date(original_path):
-    # Catch any OSError exceptions that might occur during the file renaming.
-    try:
-        directory, filename = os.path.split(original_path)
-        name, extension = os.path.splitext(filename)
-
-        # Get today's date in YYYY-MM-DD format
-        today = datetime.now().strftime("%Y-%m-%d")
-
-        # Create a new filename with today's date
-        new_filename = f"{today}_{name}{extension}"
-        new_path = os.path.join(directory, new_filename)
-
-        # Log the renaming attempt
-        logging.info(f"Attempting to rename file from {original_path} to {new_path}")
-
-        # Rename the file
-        os.rename(original_path, new_path)
-
-        # Log successful renaming
-        logging.info(f"Successfully renamed file to {new_path}")
-
-        return new_path
-    except OSError as e:
-        # Log detailed error information
-        logging.error(
-            f"Error renaming file from {original_path} to {new_path}: {e.strerror}"
-        )
-        return None
 
 
 def download_audio(youtube_url, output_path="outputs/audio"):
@@ -81,14 +45,14 @@ def download_audio(youtube_url, output_path="outputs/audio"):
     # Assuming only one file is downloaded, return the first item in the list
     # Rename the file with today's date
     if downloaded_filenames:
-        final_path = rename_file_with_date(downloaded_filenames[0])
+        final_path = downloaded_filenames[0]
         return final_path
     else:
         return None
 
 
 # Example usage
-# url = "https://youtube.com/watch?v=1O0yazhqaxs" # 5 second video
+# url = "≈" # 5 second video
 """url = "https://www.youtube.com/watch?v=0NcPkQsKZSQ"  # 10 minute video
 output_file = download_audio(url)
 print(f"Downloaded audio file path: {output_file}")"""
@@ -100,4 +64,4 @@ if __name__ == "__main__":
         audio_path = download_audio(youtube_url)
         print(f"\nDownloaded audio file path:\n{audio_path}\n")
     else:
-        print("Usage: python -m youtube-summariser.download_yt_audio.py <youtube_url>")
+        print("Usage:\npython -m gpt_summariser.download_yt_audio <youtube_url>")
