@@ -1,15 +1,15 @@
 import os
 import sys
+
 import openai
 import spacy
 import tiktoken
-
 from dotenv import load_dotenv
+from openai import OpenAI
+
 from .utils import get_filename_without_file_extension
 
 load_dotenv()
-
-openai_api_key = os.getenv("OPENAI_API_KEY")
 
 PROMPT = """You are an expert at text summarisation and have been asked to 
 create a bullet point summary of the transcript that follows the delimiter 
@@ -30,7 +30,7 @@ the main point of the text. Here is an example:
 
 #######
 
-TEXT TITLE: {title}
+TEXT TITLE: <SUITABLE TITLE>
 
 ### TEXT ###
 {chunk}
@@ -91,7 +91,28 @@ def get_chunks(sentences):
 
 
 def summarise(chunks, filename):
-    return "outputs/summaries/summary.txt"
+    client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
+
+    summaries = []
+    for chunk in chunks:
+        prompt = PROMPT.format(chunk=chunk)
+        prompt_tokens = count_tokens(prompt)
+        result = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=RESPONSE_TOKENS,
+            temperature=0,
+            n=1,
+            stream=False,
+        )
+        summaries.append(result)
+
+    summmary_path = os.path.join("outputs/summaries", f"{filename}_summary.txt")
+    with open(summmary_path, "w") as f:
+        for summary in summaries:
+            f.write(summary.choices[0].message.content)
+
+    return summmary_path
 
 
 if __name__ == "__main__":
@@ -102,6 +123,6 @@ if __name__ == "__main__":
         filename = get_filename_without_file_extension(text_path)
         summary_path = summarise(chunks, filename)
 
-        print(f"Summary saved to {summary_path}")
+        print(f"Summary saved to:/n{summary_path}")
     else:
         print("Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path>")
