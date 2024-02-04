@@ -39,9 +39,9 @@ TEXT TITLE: {title}
 MODEL = "gpt-3.5-turbo-0125"
 ENCODING = "cl100k_base"
 MODEL_MAX_TOKENS = 16384
-COST_PER_1L_INPUT_TOKENS_USD = 0.0005
+COST_PER_1K_INPUT_TOKENS_USD = 0.0005
 COST_PER_1K_OUTPUT_TOKENS_USD = 0.0015
-REPONSE_TOKENS = 4000
+RESPONSE_TOKENS = 4000
 
 
 def count_tokens(text):
@@ -64,7 +64,30 @@ def get_sentences(text_path):
 
 
 def get_chunks(sentences):
-    return ["This is a chunk"]
+    chunks = []
+    current_chunk = ""
+
+    for sentence in sentences:
+        # Check if adding the next sentence to the current chunk will exceed the
+        # token limit
+        new_chunk = f"{current_chunk} {sentence}"
+        new_chunk_token_count = (
+            count_tokens(PROMPT.format(chunk=new_chunk)) + RESPONSE_TOKENS
+        )
+
+        if new_chunk_token_count <= MODEL_MAX_TOKENS:
+            # If not, add sentence to current chunk
+            current_chunk = new_chunk.strip()
+        else:
+            # If yes, start a new chunk with the current sentence
+            chunks.append(current_chunk)
+            current_chunk = sentence.strip()
+
+    # Add the last chunk if it is not empty
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
 
 
 def summarise(chunks, filename):
