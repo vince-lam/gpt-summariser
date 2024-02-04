@@ -36,7 +36,7 @@ TEXT TITLE: {title}
 {chunk}
 """
 
-MODEL = "gpt-3.5-turbo-16k"
+MODEL = "gpt-3.5-turbo-0125"
 ENCODING = "cl100k_base"
 MODEL_MAX_TOKENS = 16384
 COST_PER_1L_INPUT_TOKENS_USD = 0.0005
@@ -44,16 +44,31 @@ COST_PER_1K_OUTPUT_TOKENS_USD = 0.0015
 REPONSE_TOKENS = 4000
 
 
-def get_sentences():
-    pass
+def count_tokens(text):
+    """Count tokens in a text string with tiktoken"""
+    enc = tiktoken.encoding_for_model(MODEL)
+    tokens = enc.encode(text)
+    token_count = len(tokens)
+    return token_count
 
 
-def get_chunks():
-    pass
+def get_sentences(text_path):
+    with open(text_path, "r") as f:
+        text = f.read()
+
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    sentences = [sent.text.strip() for sent in doc.sents]
+
+    return sentences
 
 
-def summarise():
-    pass
+def get_chunks(sentences):
+    return ["This is a chunk"]
+
+
+def summarise(chunks, filename):
+    return "outputs/summaries/summary.txt"
 
 
 if __name__ == "__main__":
