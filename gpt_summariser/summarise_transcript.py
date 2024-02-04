@@ -1,5 +1,6 @@
 import os
 import sys
+import timeit
 
 import openai
 import spacy
@@ -52,42 +53,43 @@ def count_tokens(text):
     return token_count
 
 
-def get_sentences(text_path):
+def split_text(text_path=None, title=None):
+    prompt_tokens = count_tokens(PROMPT.format(chunk="", title=title))
+    max_tokens = MODEL_MAX_TOKENS - prompt_tokens - RESPONSE_TOKENS
+
+    nlp = spacy.load("en_core_web_sm")
+    nlp.add_pipe("sentencizer")
+
     with open(text_path, "r") as f:
         text = f.read()
 
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
-    sentences = [sent.text.strip() for sent in doc.sents]
-
-    return sentences
-
-
-def get_chunks(sentences):
+    doc = nlp(text, disable=["tagger", "parser", "ner", "lemmatizer", "textcat"])
     chunks = []
-    current_chunk = ""
+    current_chunk = []
 
-    for sentence in sentences:
-        # Check if adding the next sentence to the current chunk will exceed the
-        # token limit
-        new_chunk = f"{current_chunk} {sentence}"
-        new_chunk_token_count = (
-            count_tokens(PROMPT.format(chunk=new_chunk)) + RESPONSE_TOKENS
-        )
+    for sent in doc.sents:
+        sent_text = sent.text.strip()  # This is one sentence
+        sent_tokens = count_tokens(sent_text)
 
-        if new_chunk_token_count <= MODEL_MAX_TOKENS:
-            # If not, add sentence to current chunk
-            current_chunk = new_chunk.strip()
+        if (
+            sum([count_tokens(chunk) for chunk in current_chunk]) + sent_tokens
+            > max_tokens
+        ):
+            # If adding sentence to the current chunk will exceed the token
+            # limit, add the current chunk to the list of chunks and start a new
+            # chunk with the current sentence
+            chunks.append(" ".join(current_chunk))
+            current_chunk = [sent_text]
         else:
-            # If yes, start a new chunk with the current sentence
-            chunks.append(current_chunk)
-            current_chunk = sentence.strip()
+            # If adding sentence to the current chunk will not exceed the token
+            # limit, add the sentence to the current chunk
+            current_chunk.append(sent_text)
 
-    # Add the last chunk if it is not empty
     if current_chunk:
-        chunks.append(current_chunk)
+        chunks.append(" ".join(current_chunk))
 
-    return chunks
+    total_token_count = sum([count_tokens(chunk) for chunk in chunks])
+    return chunks, total_token_count
 
 
 def summarise(chunks, filename):
@@ -117,12 +119,15 @@ def summarise(chunks, filename):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
+        start_time = timeit.default_timer()
         text_path = sys.argv[1]
-        sentences = get_sentences(text_path)
-        chunks = get_chunks(sentences)
+        chunks, total_token_count = split_text(text_path)
         filename = get_filename_without_file_extension(text_path)
         summary_path = summarise(chunks, filename)
-
+        end_time = timeit.default_timer()
+        elapsed_time = int(end_time - start_time)
         print(f"Summary saved to:/n{summary_path}")
+        print(f"Total token count: {total_token_count}")
+        print(f"Time taken: {elapsed_time} seconds")
     else:
         print("Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path>")
