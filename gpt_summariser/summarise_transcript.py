@@ -31,7 +31,7 @@ the main point of the text. Here is an example:
 
 #######
 
-TEXT TITLE: <SUITABLE TITLE>
+TEXT TITLE: {title}
 
 ### TEXT ###
 {chunk}
@@ -92,12 +92,12 @@ def split_text(text_path=None, title=None):
     return chunks, total_token_count
 
 
-def summarise(chunks, filename):
+def summarise(chunks, filename, title):
     client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
 
     summaries = []
     for chunk in chunks:
-        prompt = PROMPT.format(chunk=chunk)
+        prompt = PROMPT.format(chunk=chunk, title=title)
         prompt_tokens = count_tokens(prompt)
         result = client.chat.completions.create(
             model=MODEL,
@@ -113,6 +113,7 @@ def summarise(chunks, filename):
     with open(summmary_path, "w") as f:
         for summary in summaries:
             f.write(summary.choices[0].message.content)
+            f.write("\n")
 
     return summmary_path
 
