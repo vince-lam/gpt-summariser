@@ -137,24 +137,30 @@ def save_summaries(summaries, filename, output_dir="outputs/summaries"):
     return summary_path, total_tokens_used, total_cost
 
 
+def summarise_transcript(text_path=None, title=None):
+    start_time = timeit.default_timer()
+    chunks, total_token_count = split_text(text_path)
+    filename = get_filename_without_file_extension(text_path)
+    summaries = summarise_all(chunks)
+    summary_path, total_tokens_used, total_cost = save_summaries(
+        summaries=summaries,
+        filename=filename,
+    )
+    end_time = timeit.default_timer()
+    elapsed_time = int(end_time - start_time)
+    print(f"Total input token count: {total_token_count}")
+    print(f"Total token used: {total_tokens_used}")
+    print(f"Total cost: ${total_cost}")
+    print(f"Time taken: {elapsed_time} seconds")
+    print(f"Summary saved to:\n{summary_path}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         start_time = timeit.default_timer()
         text_path = sys.argv[1]
         title = sys.argv[2]
-        chunks, total_token_count = split_text(text_path)
-        filename = get_filename_without_file_extension(text_path)
-        summaries = summarise_all(chunks)
-        summary_path, total_tokens_used, total_cost = save_summaries(
-            summaries=summaries,
-            filename=filename,
-        )
-        end_time = timeit.default_timer()
-        elapsed_time = int(end_time - start_time)
-        print(f"Summary saved to:\n{summary_path}")
-        print(f"Total input token count: {total_token_count}")
-        print(f"Total token used: {total_tokens_used}")
-        print(f"Total cost: ${total_cost}")
-        print(f"Time taken: {elapsed_time} seconds")
     else:
-        print("Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path>")
+        print(
+            "Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path> <title>"
+        )
