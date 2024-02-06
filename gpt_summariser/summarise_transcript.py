@@ -12,9 +12,12 @@ from .utils import get_filename_without_file_extension
 
 load_dotenv()
 
-PROMPT = """You are an expert at text summarisation and have been asked to 
-create a bullet point summary of the transcript that follows the delimiter 
-### TEXT ###. 
+PROMPT = """
+As a professional transcript summarisier, create a bullet point summary of the 
+transcript that follows the delimiter ### TEXT ###. First include a title for the 
+text, and then the text itself.
+
+The format needs to be in markdown format for logseq.
 
 Do not just list the general topic, but list the actual facts shared.
 
@@ -31,7 +34,8 @@ the main point of the text. Here is an example:
 
 #######
 
-TEXT TITLE: {title}
+### TEXT TITLE ###
+{title}
 
 ### TEXT ###
 {chunk}
@@ -92,43 +96,65 @@ def split_text(text_path=None, title=None):
     return chunks, total_token_count
 
 
-def summarise(chunks, filename, title):
+def summarise(chunk=None, title=None):
     client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
+    prompt = PROMPT.format(chunk=chunk, title=title)
+    print("Prompt sent to OpenAI API.")
+    result = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=RESPONSE_TOKENS,
+        temperature=0,
+        n=1,
+        stream=False,
+    )
+    return result
 
+
+def summarise_all(chunks):
     summaries = []
     for chunk in chunks:
-        prompt = PROMPT.format(chunk=chunk, title=title)
-        prompt_tokens = count_tokens(prompt)
-        result = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=RESPONSE_TOKENS,
-            temperature=0,
-            n=1,
-            stream=False,
-        )
+        result = summarise(chunk)
         summaries.append(result)
+    return summaries
 
-    summmary_path = os.path.join("outputs/summaries", f"{filename}_summary.txt")
-    with open(summmary_path, "w") as f:
+
+def save_summaries(summaries, filename, output_dir="outputs/summaries"):
+    total_input_tokens_used = 0
+    total_output_tokens_used = 0
+    summary_path = os.path.join(output_dir, f"{filename}.txt")
+    with open(summary_path, "w") as f:
         for summary in summaries:
             f.write(summary.choices[0].message.content)
             f.write("\n")
+            total_input_tokens_used += summary.usage.prompt_tokens
+            total_output_tokens_used += summary.usage.completion_tokens
+    total_input_cost = total_input_tokens_used * COST_PER_1K_INPUT_TOKENS_USD / 1000
+    total_output_cost = total_output_tokens_used * COST_PER_1K_OUTPUT_TOKENS_USD / 1000
+    total_tokens_used = total_input_tokens_used + total_output_tokens_used
+    total_cost = total_input_cost + total_output_cost
 
-    return summmary_path
+    return summary_path, total_tokens_used, total_cost
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         start_time = timeit.default_timer()
         text_path = sys.argv[1]
+        title = sys.argv[2]
         chunks, total_token_count = split_text(text_path)
         filename = get_filename_without_file_extension(text_path)
-        summary_path = summarise(chunks, filename)
+        summaries = summarise_all(chunks)
+        summary_path, total_tokens_used, total_cost = save_summaries(
+            summaries=summaries,
+            filename=filename,
+        )
         end_time = timeit.default_timer()
         elapsed_time = int(end_time - start_time)
-        print(f"Summary saved to:/n{summary_path}")
-        print(f"Total token count: {total_token_count}")
+        print(f"Summary saved to:\n{summary_path}")
+        print(f"Total input token count: {total_token_count}")
+        print(f"Total token used: {total_tokens_used}")
+        print(f"Total cost: ${total_cost}")
         print(f"Time taken: {elapsed_time} seconds")
     else:
         print("Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path>")
