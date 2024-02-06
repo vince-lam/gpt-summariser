@@ -1,9 +1,10 @@
 import os
 import sys
 from datetime import datetime
-from .utils import slugify, get_filename_without_file_extension
 
 import yt_dlp
+
+from .utils import get_filename_without_file_extension, slugify
 
 
 def download_audio(youtube_url, output_path="outputs/audio"):
