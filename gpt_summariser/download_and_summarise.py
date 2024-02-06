@@ -17,5 +17,5 @@ if __name__ == "__main__":
         summarise_transcript(text_path, title)
     else:
         print(
-            "Usage: python3 -m gpt_summariser.download_and_summarise <transcript_path> <title>"
+            "Usage: python3 -m gpt_summariser.download_and_summarise <youtube_url> <title>"
         )
