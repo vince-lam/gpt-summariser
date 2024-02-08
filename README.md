@@ -40,7 +40,7 @@ The GPT Summarization App is a powerful tool designed to streamline the process 
 8. Create `.env` in root directory and add your OpenAI API key:
 
     ```env
-    OPENAI_API_KEY='add your OpenAI API key here'
+    OPENAI_API_KEY='add your OpenAI API key here' # https://platform.openai.com/account/api-keys
     ```
 
 ## Usage
@@ -83,9 +83,9 @@ The GPT Summarization App is a powerful tool designed to streamline the process 
 * [x] Download the YouTube video as a `wav` audio file
 * [x] Transcribe audio file using OpenAI's Whisper model to `txt` or `vtt` formats
 * [x] Summarise the transcript using free models from HuggingFace
+* [x] Transcribe audio file using `insanely-fast-whisper` and `distil-whisper` for faster transcriptions
 * [ ] Add documentation
 * [ ] Add tests
-* [ ] Transcribe audio file using `insanely-fast-whisper` and `distil-whisper` for faster transcriptions
 * [ ] Use free open-source models for summarisation instead of GPT3.5
 * [ ] Add speaker diarisation support
 * [ ] If the YouTube URL is in the `youtu.be` format, then convert it to the `/watch?v=` format
@@ -97,7 +97,7 @@ The GPT Summarization App is a powerful tool designed to streamline the process 
 
 ## Contributing
 
-We welcome contributions! If you'd like to improve the GPT Summarization App, please fork the repository and submit a pull request with your proposed changes.
+Contributions are welcome! If you'd like to improve the GPT Summarisation App, please fork the repository and submit a pull request with your proposed changes.
 
 ## License
 
