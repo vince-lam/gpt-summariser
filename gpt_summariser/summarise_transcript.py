@@ -13,16 +13,16 @@ from .utils import get_filename_without_file_extension
 load_dotenv()
 
 PROMPT = """
-As a professional transcript summarisier, create a bullet point summary of the 
-transcript that follows the delimiter ### TEXT ###. First include a title for the 
+As a professional transcript summarisier, create a bullet point summary of the
+transcript that follows the delimiter ### TEXT ###. First include a title for the
 text, and then the text itself.
 
 The format needs to be in markdown format for logseq.
 
 Do not just list the general topic, but list the actual facts shared.
 
-For example, if a speaker claims that "an increase in X leads to a decrease in 
-Y", then you should include that claim in the summary, rather than saying "the 
+For example, if a speaker claims that "an increase in X leads to a decrease in
+Y", then you should include that claim in the summary, rather than saying "the
 speaker discussed the relationship between X and Y".
 
 Use "- " for bullet points.
@@ -75,10 +75,7 @@ def split_text(text_path=None, title=None):
         sent_text = sent.text.strip()  # This is one sentence
         sent_tokens = count_tokens(sent_text)
 
-        if (
-            sum([count_tokens(chunk) for chunk in current_chunk]) + sent_tokens
-            > max_tokens
-        ):
+        if sum([count_tokens(chunk) for chunk in current_chunk]) + sent_tokens > max_tokens:
             # If adding sentence to the current chunk will exceed the token
             # limit, add the current chunk to the list of chunks and start a new
             # chunk with the current sentence
@@ -100,6 +97,7 @@ def summarise(chunk=None, title=None):
     client = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
     prompt = PROMPT.format(chunk=chunk, title=title)
     print("Prompt sent to OpenAI API.")
+    print(prompt)
     result = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
@@ -111,10 +109,10 @@ def summarise(chunk=None, title=None):
     return result
 
 
-def summarise_all(chunks):
+def summarise_all(chunks, title=None):
     summaries = []
     for chunk in chunks:
-        result = summarise(chunk)
+        result = summarise(chunk, title=title)
         summaries.append(result)
     return summaries
 
@@ -139,9 +137,9 @@ def save_summaries(summaries, filename, output_dir="outputs/summaries"):
 
 def summarise_transcript(text_path=None, title=None):
     start_time = timeit.default_timer()
-    chunks, total_token_count = split_text(text_path)
+    chunks, total_token_count = split_text(text_path, title=title)
     filename = get_filename_without_file_extension(text_path)
-    summaries = summarise_all(chunks)
+    summaries = summarise_all(chunks, title=title)
     summary_path, total_tokens_used, total_cost = save_summaries(
         summaries=summaries,
         filename=filename,
@@ -160,7 +158,6 @@ if __name__ == "__main__":
         start_time = timeit.default_timer()
         text_path = sys.argv[1]
         title = sys.argv[2]
+        summarise_transcript(text_path, title)
     else:
-        print(
-            "Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path> <title>"
-        )
+        print("Usage: python3 -m gpt_summariser.summarise_transcript <transcript_path> <title>")
