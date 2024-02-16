@@ -2,10 +2,9 @@ import os
 import sys
 import timeit
 
-import openai
+import ollama
 import spacy
 import tiktoken
-from openai import OpenAI
 
 from .utils import get_filename_without_file_extension
 
@@ -39,8 +38,8 @@ the main point of the text. Here is an example:
 {chunk}
 """
 
+OLLAMA_MODEL = "mistral-openorca"
 MODEL = "gpt-3.5-turbo-0125"
-LLM = "mistral-openorca"
 ENCODING = "cl100k_base"
 MODEL_MAX_TOKENS = 16384
 COST_PER_1K_INPUT_TOKENS_USD = 0.0005
@@ -93,60 +92,46 @@ def split_text(text_path=None, title=None):
 
 
 def summarise(chunk=None, title=None):
-    client = openai.Client(base_url="http://localhost:11434/v1", api_key="ollama")
     prompt = PROMPT.format(chunk=chunk, title=title)
     print("Prompt sent to Ollama.")
-    result = client.chat.completions.create(
-        model=LLM,
+    result = ollama.chat(
+        model=OLLAMA_MODEL,
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=RESPONSE_TOKENS,
-        temperature=0,
-        n=1,
         stream=False,
     )
     return result
 
 
-def summarise_all(chunks):
+def summarise_all(chunks, title=None):
     summaries = []
     for chunk in chunks:
-        result = summarise(chunk)
+        result = summarise(chunk, title=title)
         summaries.append(result)
     return summaries
 
 
 def save_summaries(summaries, filename, output_dir="outputs/summaries"):
-    total_input_tokens_used = 0
-    total_output_tokens_used = 0
     summary_path = os.path.join(output_dir, f"{filename}.txt")
     with open(summary_path, "w") as f:
         for summary in summaries:
-            f.write(summary.choices[0].message.content)
+            f.write(summary["message"]["content"])
             f.write("\n")
-            total_input_tokens_used += summary.usage.prompt_tokens
-            total_output_tokens_used += summary.usage.completion_tokens
-    total_input_cost = total_input_tokens_used * COST_PER_1K_INPUT_TOKENS_USD / 1000
-    total_output_cost = total_output_tokens_used * COST_PER_1K_OUTPUT_TOKENS_USD / 1000
-    total_tokens_used = total_input_tokens_used + total_output_tokens_used
-    total_cost = total_input_cost + total_output_cost
 
-    return summary_path, total_tokens_used, total_cost
+    return summary_path
 
 
 def summarise_transcript(text_path=None, title=None):
     start_time = timeit.default_timer()
-    chunks, total_token_count = split_text(text_path)
+    chunks, total_token_count = split_text(text_path, title=title)
     filename = get_filename_without_file_extension(text_path)
-    summaries = summarise_all(chunks)
-    summary_path, total_tokens_used, total_cost = save_summaries(
+    summaries = summarise_all(chunks, title=title)
+    summary_path = save_summaries(
         summaries=summaries,
         filename=filename,
     )
     end_time = timeit.default_timer()
     elapsed_time = int(end_time - start_time)
     print(f"Total input token count: {total_token_count}")
-    print(f"Total token used: {total_tokens_used}")
-    print(f"Total cost saved: ${total_cost}")
     print(f"Time taken: {elapsed_time} seconds")
     print(f"Summary saved to:\n{summary_path}")
 
