@@ -10,32 +10,34 @@ from .utils import get_filename_without_file_extension
 
 
 PROMPT = """
-As a professional transcript summarisier, create a bullet point summary of the
-transcript that follows the delimiter ### TEXT ###. First include a title for the
-text, and then the text itself.
+<|im_start|>
+As a world class transcript summarizer, create a bullet point summary of the
+transcript provided.
 
-The format needs to be in markdown format for logseq.
+First include a suitable title for the summary based on the title within the <TITLE> delimiter.
+Then include the bullet point summary of the text within the <TEXT> delimiter.
 
-Do not just list the general topic, but list the actual facts shared.
+The format of your response needs to be in markdown formatting. Use "- " for bullet points.
+
+Do not just list the general topic or makes things up, only list the actual facts shared.
 
 For example, if a speaker claims that "an increase in X leads to a decrease in
 Y", then you should include that claim in the summary, rather than saying "the
 speaker discussed the relationship between X and Y".
 
-Use "- " for bullet points.
-
-After you have made all bullet points, add one more bullet point that summarises
+After you have made all bullet points, add one more bullet point that summarizes
 the main point of the text. Here is an example:
 
 - Main message: <MAIN MESSAGE HERE>
 
-#######
+######
 
-### TEXT TITLE ###
+<TITLE>
 {title}
 
-### TEXT ###
+<TEXT>
 {chunk}
+<|im_end|>
 """
 
 OLLAMA_MODEL = "mistral-openorca"
