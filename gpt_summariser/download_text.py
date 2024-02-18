@@ -3,13 +3,16 @@ import sys
 
 from newspaper import Article
 
+from .utils import slugify
+
 
 def download_website_text(url, title, output_path="outputs/website"):
     article = Article(url)
     article.download()
     article.parse()
+    title_slug = slugify(title)
 
-    filename = f"{title}.txt"
+    filename = f"{title_slug}.txt"
     file_path = os.path.join(output_path, filename)
     with open(file_path, "w") as f:
         f.write(article.text)
