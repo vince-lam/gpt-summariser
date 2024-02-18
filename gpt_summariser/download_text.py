@@ -9,16 +9,11 @@ def download_website_text(url, title, output_path="outputs/website"):
     article.download()
     article.parse()
 
-    # Access article attributes
-    print(article.authors)
-    print(article.publish_date)
-    print(article.text)
     filename = f"{title}.txt"
     file_path = os.path.join(output_path, filename)
     with open(file_path, "w") as f:
-        f.write(f"Author: {article.authors}\n")
-        f.write(f"Publish date: {article.publish_date}\n\n")
         f.write(article.text)
+
     return file_path, article.text
 
 
