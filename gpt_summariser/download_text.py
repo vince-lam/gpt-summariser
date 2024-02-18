@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 from newspaper import Article
 
@@ -11,8 +12,8 @@ def download_website_text(url, title, output_path="outputs/website"):
     article.download()
     article.parse()
     title_slug = slugify(title)
-
-    filename = f"{title_slug}.txt"
+    date_str = datetime.now().strftime("%Y-%m-%d_")
+    filename = f"{date_str}{title_slug}.txt"
     file_path = os.path.join(output_path, filename)
     with open(file_path, "w") as f:
         f.write(article.text)
