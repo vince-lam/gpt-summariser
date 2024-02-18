@@ -1,18 +1,19 @@
 import os
+import re
 
 
-def slugify(filename):
-    """
-    Converts a filename into a slug format by replacing spaces, dots, and dashes with underscores,
-    and converting the filename to lowercase.
-
-    Args:
-        filename (str): The filename to be slugified.
-
-    Returns:
-        str: The slugified filename.
-    """
-    return filename.replace(" ", "_").replace(".", "_").replace("-", "_").lower()
+def slugify(text):
+    # Convert to lowercase
+    text = text.lower()
+    # Replace spaces with hyphens
+    text = text.replace(" ", "-")
+    # Remove characters that are not alphanumeric or hyphens
+    text = re.sub(r"[^a-z0-9\-]", "", text)
+    # Replace multiple hyphens with a single hyphen
+    text = re.sub(r"-+", "-", text)
+    # Trim hyphens from the start and end of the text
+    text = text.strip("-")
+    return text
 
 
 def get_filename_without_file_extension(path):
