@@ -25,7 +25,7 @@ def download_audio(youtube_url, output_path="outputs/audio"):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    date_str = datetime.now().strftime("%Y-%m-%d_")
+    date_str = datetime.now().strftime("%Y-%m-%d-")
     outtmpl = os.path.join(output_path, date_str + "%(title)s.%(ext)s")
 
     # Options for downloading audio in best format and converting to wav
