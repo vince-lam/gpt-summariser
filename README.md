@@ -1,6 +1,6 @@
 # GPT Summarisation App
 
-The GPT Summarization App is a powerful tool designed to streamline the process of extracting and summarising content from YouTube videos. By leveraging the capabilities of OpenAI's Whisper model for accurate transcription and the GPT-3.5 API for concise summarisation, this app offers a seamless workflow for users to input a YouTube URL and receive a summarised text of the video's audio content.
+The GPT Summarisation App is a powerful tool designed to streamline the process of extracting and summarising content from YouTube videos. By leveraging the capabilities of OpenAI's Whisper model for accurate transcription and the GPT-3.5 API for concise summarisation, this app offers a seamless workflow for users to input a YouTube URL and receive a summarised text of the video's audio content.
 
 ## Features
 
